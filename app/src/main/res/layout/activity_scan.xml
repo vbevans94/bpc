@@ -1,0 +1,28 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="@dimen/vertical_page_margin"
+    android:layout_marginLeft="@dimen/horizontal_page_margin"
+    android:layout_marginRight="@dimen/horizontal_page_margin"
+    android:layout_marginTop="@dimen/vertical_page_margin"
+    android:orientation="vertical">
+
+    <FrameLayout
+        style="@style/Widget.SampleMessageTile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            style="@style/Widget.SampleMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/intro_message" />
+    </FrameLayout>
+
+    <ListView
+        android:id="@+id/list_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>

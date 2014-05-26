@@ -1,0 +1,49 @@
+apply plugin: 'android'
+
+dependencies {
+    compile 'com.android.support:support-v4:19.1.+'
+    compile 'com.android.support:appcompat-v7:+'
+    compile "com.android.support:support-v13:19.0.+"
+    compile 'com.google.android.gms:play-services:4.+'
+    compile 'com.jakewharton:butterknife:5.1.0'
+}
+
+// The sample build uses multiple directories to
+// keep boilerplate and common code separate from
+// the menu_scan sample code.
+List<String> dirs = ['main']
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.3"
+
+    defaultConfig {
+        packageName "ua.cofriends.bpc"
+    }
+
+    sourceSets {
+        main {
+            dirs.each { dir ->
+                java.srcDirs "src/${dir}/java"
+                res.srcDirs "src/${dir}/res"
+            }
+        }
+        instrumentTest.setRoot('tests')
+        instrumentTest.java.srcDirs = ['tests/src']
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
