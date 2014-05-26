@@ -162,7 +162,7 @@ public class ScanActivity extends ActionBarActivity {
                 public void run() {
                     mScanning = false;
                     mBluetoothAdapter.cancelDiscovery();
-                    invalidateOptionsMenu();
+                    supportInvalidateOptionsMenu();
                 }
             }, SCAN_PERIOD);
 
