@@ -1,16 +1,16 @@
 TEMPLATE = app
-TARGET = btchat
+TARGET = bpcserver
 
 QT = core bluetooth widgets
 
 SOURCES = \
     main.cpp \
-    chatserver.cpp
+    bpcserver.cpp
 
 HEADERS = \
-    chatserver.h
+    bpcserver.h
 
 FORMS =
 
-target.path = $$[QT_INSTALL_EXAMPLES]/bluetooth/btchat
+target.path = build/bpcserver
 INSTALLS += target

@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include "chatserver.h"
+#include "bpcserver.h"
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -103,17 +103,17 @@ int sendKeyEvent(int keycode)
 static const QLatin1String serviceUuid("e8e10f95-1a70-4b27-9ccf-02010264e9c8");
 //! [Service UUID]
 
-ChatServer::ChatServer(QObject *parent)
+BpcServer::BpcServer(QObject *parent)
 :   QObject(parent), rfcommServer(0)
 {
 }
 
-ChatServer::~ChatServer()
+BpcServer::~BpcServer()
 {
     stopServer();
 }
 
-void ChatServer::startServer(const QBluetoothAddress& localAdapter)
+void BpcServer::startServer(const QBluetoothAddress& localAdapter)
 {
     if (rfcommServer)
         return;
@@ -177,7 +177,7 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
 }
 
 //! [stopServer]
-void ChatServer::stopServer()
+void BpcServer::stopServer()
 {
     // Unregister service
     serviceInfo.unregisterService();
@@ -192,7 +192,7 @@ void ChatServer::stopServer()
 //! [stopServer]
 
 //! [sendMessage]
-void ChatServer::sendMessage(const QString &message)
+void BpcServer::sendMessage(const QString &message)
 {
     QByteArray text = message.toUtf8() + '\n';
 
@@ -202,7 +202,7 @@ void ChatServer::sendMessage(const QString &message)
 //! [sendMessage]
 
 //! [clientConnected]
-void ChatServer::clientConnected()
+void BpcServer::clientConnected()
 {
     QBluetoothSocket *socket = rfcommServer->nextPendingConnection();
     if (!socket)
@@ -216,7 +216,7 @@ void ChatServer::clientConnected()
 //! [clientConnected]
 
 //! [clientDisconnected]
-void ChatServer::clientDisconnected()
+void BpcServer::clientDisconnected()
 {
     QBluetoothSocket *socket = qobject_cast<QBluetoothSocket *>(sender());
     if (!socket)
@@ -231,7 +231,7 @@ void ChatServer::clientDisconnected()
 //! [clientDisconnected]
 
 //! [readSocket]
-void ChatServer::readSocket()
+void BpcServer::readSocket()
 {
     QBluetoothSocket *socket = qobject_cast<QBluetoothSocket *>(sender());
     if (!socket)
