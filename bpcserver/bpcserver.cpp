@@ -212,6 +212,8 @@ void BpcServer::clientConnected()
     connect(socket, SIGNAL(disconnected()), this, SLOT(clientDisconnected()));
     clientSockets.append(socket);
     emit clientConnected(socket->peerName());
+
+    qWarning("Connected");
 }
 //! [clientConnected]
 
@@ -227,6 +229,8 @@ void BpcServer::clientDisconnected()
     clientSockets.removeOne(socket);
 
     socket->deleteLater();
+
+    qWarning("Disconnected");
 }
 //! [clientDisconnected]
 
@@ -247,6 +251,7 @@ void BpcServer::readSocket()
         } else if (line.startsWith("START")) {
             QList<QByteArray> parts = line.split('|');
             system("google-chrome --new-window " + parts[1]);
+            sendKeyEvent(XK_F11);
         }
         emit messageReceived(socket->peerName(),
                              QString::fromUtf8(line.constData(), line.length()));

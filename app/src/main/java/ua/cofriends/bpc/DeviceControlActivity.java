@@ -38,7 +38,7 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 
 public class DeviceControlActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks
-        , GoogleApiClient.OnConnectionFailedListener, CommunicationThread.OnConnected {
+        , GoogleApiClient.OnConnectionFailedListener, CommunicationThread.Listener {
 
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
     private static final int RESOLVE_CONNECTION_REQUEST_CODE = 3;
@@ -55,6 +55,7 @@ public class DeviceControlActivity extends ActionBarActivity implements GoogleAp
     private CommunicationThread mCommunicationThread;
     private GoogleApiClient mGoogleApiClient;
     private final BlockingQueue<CommunicationThread.Command> mQueue = new ArrayBlockingQueue<CommunicationThread.Command>(16);
+    private boolean mRefusedDrive;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,16 +83,18 @@ public class DeviceControlActivity extends ActionBarActivity implements GoogleAp
     protected void onResume() {
         super.onResume();
 
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(Drive.API)
-                    .addScope(Drive.SCOPE_FILE)
-                    .addScope(Drive.SCOPE_APPFOLDER) // required for App Folder sample
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
+        if (!mRefusedDrive) {
+            if (mGoogleApiClient == null) {
+                mGoogleApiClient = new GoogleApiClient.Builder(this)
+                        .addApi(Drive.API)
+                        .addScope(Drive.SCOPE_FILE)
+                        .addScope(Drive.SCOPE_APPFOLDER) // required for App Folder sample
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .build();
+            }
+            mGoogleApiClient.connect();
         }
-        mGoogleApiClient.connect();
     }
 
     @Override
@@ -116,6 +119,8 @@ public class DeviceControlActivity extends ActionBarActivity implements GoogleAp
                     DriveId driveId = (DriveId) data.getParcelableExtra(
                             OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
                     getIntent().putExtra(OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID, driveId);
+                } else {
+                    mRefusedDrive = true;
                 }
                 break;
         }
@@ -138,15 +143,17 @@ public class DeviceControlActivity extends ActionBarActivity implements GoogleAp
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_disconnect:
+                setSupportProgressBarIndeterminateVisibility(true);
                 mCommunicationThread.cancel();
                 mCommunicationThread = null;
                 break;
 
             case R.id.menu_connect:
+                setSupportProgressBarIndeterminateVisibility(true);
+                mCommunicationThread = new CommunicationThread(mDevice, mQueue, this);
+                mCommunicationThread.start();
                 if (getIntent().hasExtra(KEY_METADATA_LINK)) {
                     String link = getIntent().getStringExtra(KEY_METADATA_LINK);
-                    mCommunicationThread = new CommunicationThread(mDevice, mQueue, this);
-                    mCommunicationThread.start();
                     mQueue.offer(CommunicationThread.Command.start(link));
                 }
                 break;
@@ -247,8 +254,22 @@ public class DeviceControlActivity extends ActionBarActivity implements GoogleAp
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                setSupportProgressBarIndeterminateVisibility(false);
                 mConnected = true;
                 mTextConnectionState.setText(R.string.connected);
+                supportInvalidateOptionsMenu();
+            }
+        });
+    }
+
+    @Override
+    public void onDisconnected() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setSupportProgressBarIndeterminateVisibility(false);
+                mConnected = false;
+                mTextConnectionState.setText(R.string.disconnected);
                 supportInvalidateOptionsMenu();
             }
         });

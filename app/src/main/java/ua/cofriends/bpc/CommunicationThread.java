@@ -19,10 +19,11 @@ public class CommunicationThread extends Thread {
 
     private final BluetoothSocket mSocket;
     private final BlockingQueue<Command> mQueue;
-    private final WeakReference<OnConnected> mListenerRef;
+    private final WeakReference<Listener> mListenerRef;
     private OutputStream mOutStream;
+    private boolean mCancelled;
 
-    public CommunicationThread(BluetoothDevice device, BlockingQueue<Command> queue, OnConnected listener) {
+    public CommunicationThread(BluetoothDevice device, BlockingQueue<Command> queue, Listener listener) {
         // Use a temporary object that is later assigned to mSocket,
         // because mSocket is final
         BluetoothSocket tmp = null;
@@ -36,7 +37,7 @@ public class CommunicationThread extends Thread {
         }
         mSocket = tmp;
         mQueue = queue;
-        mListenerRef = new WeakReference<OnConnected>(listener);
+        mListenerRef = new WeakReference<Listener>(listener);
     }
 
     @Override
@@ -60,13 +61,13 @@ public class CommunicationThread extends Thread {
             return;
         }
 
-        OnConnected listener = mListenerRef.get();
+        Listener listener = mListenerRef.get();
         if (listener != null) {
             listener.onConnected();
         }
 
         try {
-            while (true) {
+            while (!mCancelled) {
                 Command command = mQueue.take();
                 mOutStream.write(command.toString().getBytes());
                 mOutStream.flush();
@@ -82,6 +83,12 @@ public class CommunicationThread extends Thread {
      * Cancels an in-progress connection, and closes the socket.
      */
     public void cancel() {
+        mCancelled = true;
+        Listener listener = mListenerRef.get();
+        if (listener != null) {
+            listener.onDisconnected();
+        }
+        interrupt();
         try {
             mSocket.close();
         } catch (IOException e) {
@@ -89,9 +96,11 @@ public class CommunicationThread extends Thread {
         }
     }
 
-    public interface OnConnected {
+    public interface Listener {
 
         void onConnected();
+
+        void onDisconnected();
     }
 
     public static class Command {
